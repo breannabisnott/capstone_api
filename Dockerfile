@@ -2,8 +2,8 @@
 FROM python:3.13-slim
 
 # Set environment variables to avoid .pyc files and to ensure unbuffered output
-ENV PYTHONUNBUFFERED 1
-ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
 
 # Set the working directory in the container
 WORKDIR /app
