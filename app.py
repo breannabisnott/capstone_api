@@ -8,7 +8,20 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI()
+
+origins = [ "http://127.0.0.1:5501" , "http://localhost:5501"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 class SensorData(BaseModel):
     id: int = None 
     device_id: str
