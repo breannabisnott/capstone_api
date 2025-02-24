@@ -63,3 +63,14 @@ async def get_all_data(device_id: str, page_size:int = Query(None, description="
             )
             sensordata = cur.fetchall()
     return sensordata
+
+@app.get("/latestData/{device_id}")
+async def get_latest_data(device_id: str):
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """select * from sensor_data WHERE device_id = %s order by time_stamp desc LIMIT 1;
+                """, [device_id]
+            )
+            latestdata = cur.fetchall()
+    return latestdata
