@@ -1,10 +1,19 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, HTTPException
 import psycopg
 from psycopg.rows import dict_row
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from datetime import datetime
 import os
 from dotenv import load_dotenv
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from starlette.responses import JSONResponse
+from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
+from typing import List
+
+class EmailSchema(BaseModel):
+    email: List[EmailStr]
 
 load_dotenv()
 
@@ -36,6 +45,32 @@ class SensorData(BaseModel):
 def get_db_connection():
     return psycopg.connect(dbname=os.getenv("DB_NAME"), host=os.getenv("DB_HOST"), password=os.getenv("DB_PASS"), user= os.getenv("DB_USER"), row_factory=dict_row)
 
+SMTP_SERVER = "smtp.gmail.com"
+SMTP_PORT = 587
+SENDER_EMAIL = "bxscuit.0@gmail.com"
+SENDER_PASSWORD = "wauk ihqr hjml nuay"  # Use App Password if using Gmail
+RECEIVER_EMAIL = "breanna.bisnott@gmail.com"
+
+def send_email_alert(device_id: str):
+    """Send an email alert when sensor value is 0."""
+    subject = f"🚨 FIRE DETECTED by device: {device_id}!"
+    body = f"Warning! Device {device_id} has detected a flame. Please check the system immediately."
+    
+    msg = MIMEMultipart()
+    msg["From"] = SENDER_EMAIL
+    msg["To"] = RECEIVER_EMAIL
+    msg["Subject"] = subject
+    msg.attach(MIMEText(body, "plain"))
+
+    try:
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()
+            server.login(SENDER_EMAIL, SENDER_PASSWORD)
+            server.sendmail(SENDER_EMAIL, RECEIVER_EMAIL, msg.as_string())
+        print(f" Email alert sent for Device {device_id}")
+    except Exception as e:
+        print(f" Failed to send email: {e}")
+
 @app.post("/data")
 async def new_data(request:SensorData):
     request.time_stamp = datetime.now()
@@ -51,6 +86,10 @@ async def new_data(request:SensorData):
                 (request.device_id, request.time_stamp, request.temperature, request.flame, request.flame_level, request.gas, request.gas_concentration, request.oxygen_concentration)
             )
             conn.commit()
+    if request.flame == 0:
+        send_email_alert(request.device_id)
+        return {"message": "Alert sent!", "sensor_id": request.device_id}
+    
     return {"message": "success"}
 
 @app.get("/data/{device_id}")
@@ -58,7 +97,7 @@ async def get_all_data(device_id: str, page_size:int = Query(None, description="
     with get_db_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                """select * from sensor_data where device_id = %s order by time_stamp limit %s offset %s*%s
+                """select * from sensor_data where device_id = %s order by time_stamp desc limit %s offset %s*%s
                 """, (device_id, page_size, page_size, page_number)
             )
             sensordata = cur.fetchall()
