@@ -1,4 +1,8 @@
-from fastapi import FastAPI, Query, HTTPException
+from fastapi import FastAPI, Query, File, UploadFile, Form, HTTPException
+from fastapi.responses import JSONResponse
+import smtplib
+from email.mime.base import MIMEBase
+from email import encoders
 import psycopg
 from psycopg.rows import dict_row
 from pydantic import BaseModel, EmailStr
@@ -69,6 +73,35 @@ def send_email_alert(device_id: str):
     except Exception as e:
         print(f" Failed to send email: {e}")
 
+@app.post("/send-email")
+async def send_email(pdf: UploadFile = File(...), email: str = Form(...)):
+    try:
+        # Create the email
+        msg = MIMEMultipart()
+        msg['From'] = SENDER_EMAIL
+        msg['To'] = email
+        msg['Subject'] = 'Incident Report PDF'
+
+        # Attach the PDF
+        part = MIMEBase('application', 'octet-stream')
+        part.set_payload(await pdf.read())
+        encoders.encode_base64(part)
+        part.add_header('Content-Disposition', f'attachment; filename="{pdf.filename}"')
+        msg.attach(part)
+
+        # Send the email
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()
+            server.login(SENDER_EMAIL, SENDER_PASSWORD)
+            server.send_message(msg)
+
+        return JSONResponse(content={"message": "Email sent successfully!"}, status_code=200)
+
+    except smtplib.SMTPException as e:
+        return JSONResponse(content={"message": f"Failed to send email: {str(e)}"}, status_code=500)
+    except Exception as e:
+        return JSONResponse(content={"message": f"An unexpected error occurred: {str(e)}"}, status_code=500)
+    
 @app.post("/data")
 async def new_data(request:SensorData):
     request.time_stamp = datetime.now()
