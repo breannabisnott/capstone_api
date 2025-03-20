@@ -49,7 +49,8 @@ def get_db_connection():
 
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
-
+SENDER_EMAIL = "bxscuit.0@gmail.com"
+SENDER_PASSWORD = "wauk ihqr hjml nuay"  # Use App Password if using Gmail
 RECEIVER_EMAIL = "breanna.bisnott@gmail.com"
 
 def send_email_alert(device_id: str):
@@ -58,7 +59,7 @@ def send_email_alert(device_id: str):
     body = f"Warning! Device {device_id} has detected a flame. Please check the system immediately."
     
     msg = MIMEMultipart()
-    msg["From"] = os.getenv("SENDER_EMAIL")
+    msg["From"] = SENDER_EMAIL
     msg["To"] = RECEIVER_EMAIL
     msg["Subject"] = subject
     msg.attach(MIMEText(body, "plain"))
@@ -66,8 +67,8 @@ def send_email_alert(device_id: str):
     try:
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls()
-            server.login(os.getenv("SENDER_EMAIL"), os.getenv("SENDER_PASSWORD"))
-            server.sendmail(os.getenv("SENDER_EMAIL"), RECEIVER_EMAIL, msg.as_string())
+            server.login(SENDER_EMAIL, SENDER_PASSWORD)
+            server.sendmail(SENDER_EMAIL, RECEIVER_EMAIL, msg.as_string())
         print(f" Email alert sent for Device {device_id}")
     except Exception as e:
         print(f" Failed to send email: {e}")
@@ -77,7 +78,7 @@ async def send_email(pdf: UploadFile = File(...), email: str = Form(...)):
     try:
         # Create the email
         msg = MIMEMultipart()
-        msg['From'] = os.getenv("SENDER_EMAIL")
+        msg['From'] = SENDER_EMAIL
         msg['To'] = email
         msg['Subject'] = 'Incident Report PDF'
 
@@ -91,7 +92,7 @@ async def send_email(pdf: UploadFile = File(...), email: str = Form(...)):
         # Send the email
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls()
-            server.login(os.getenv("SENDER_EMAIL"), os.getenv("SENDER_PASSWORD"))
+            server.login(SENDER_EMAIL, SENDER_PASSWORD)
             server.send_message(msg)
 
         return JSONResponse(content={"message": "Email sent successfully!"}, status_code=200)
