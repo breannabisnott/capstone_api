@@ -121,7 +121,7 @@ async def new_data(request:SensorData):
                 (request.device_id, request.time_stamp, request.temperature, request.flame, request.flame_level, request.gas, request.gas_concentration, request.oxygen_concentration, request.humidity, request.lat, request.lng, request.accuracy)
             )
             conn.commit()
-    if request.flame == 0:
+    if request.flame == 1:
         send_email_alert(request.device_id)
         return {"message": "Alert sent!", "sensor_id": request.device_id}
     
