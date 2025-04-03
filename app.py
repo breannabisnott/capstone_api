@@ -43,6 +43,10 @@ class SensorData(BaseModel):
     gas: bool
     gas_concentration: float
     oxygen_concentration: float
+    humidity: float
+    lat: float
+    lng: float
+    accuracy: float
 
 def get_db_connection():
     return psycopg.connect(dbname=os.getenv("DB_NAME"), host=os.getenv("DB_HOST"), password=os.getenv("DB_PASS"), user= os.getenv("DB_USER"), row_factory=dict_row)
@@ -110,11 +114,11 @@ async def new_data(request:SensorData):
             cur.execute(
                 """
                 insert into sensor_data
-                (device_id, time_stamp, temperature, flame, flame_level, gas, gas_concentration, oxygen_concentration) 
+                (device_id, time_stamp, temperature, flame, flame_level, gas, gas_concentration, oxygen_concentration, humidity, lat, lng, accuracy) 
                 values
-                (%s, %s, %s, %s, %s, %s, %s, %s)
+                (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """, 
-                (request.device_id, request.time_stamp, request.temperature, request.flame, request.flame_level, request.gas, request.gas_concentration, request.oxygen_concentration)
+                (request.device_id, request.time_stamp, request.temperature, request.flame, request.flame_level, request.gas, request.gas_concentration, request.oxygen_concentration, request.humidity, request.lat, request.lng, request.accuracy)
             )
             conn.commit()
     if request.flame == 0:
@@ -144,3 +148,16 @@ async def get_latest_data(device_id: str):
             )
             latestdata = cur.fetchall()
     return latestdata
+
+@app.get("/latestLocation/{device_id}")
+async def get_latest_data(device_id: str):
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """select lat, lng from sensor_data WHERE device_id = %s order by time_stamp desc LIMIT 1;
+                """, [device_id]
+            )
+            latestdata = cur.fetchall()
+    return latestdata
+
+#test
