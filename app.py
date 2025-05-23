@@ -193,7 +193,7 @@ async def new_data(request:SensorData):
             )
             conn.commit()
             # Fetch the current settings from DB
-            cur.execute("SELECT alert_email, fire_email, hospital_email, temp_thresh, gas_thresh FROM settings_data LIMIT 1")
+            cur.execute("""SELECT alert_email, fire_email, hospital_email, temp_thresh, gas_thresh FROM settings_data LIMIT 1""")
             row = cur.fetchone()
 
             if not row:
