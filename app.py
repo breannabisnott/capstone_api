@@ -187,13 +187,13 @@ async def new_data(request:SensorData):
             )
             conn.commit()
             # Fetch the current settings from DB
-            cur.execute("SELECT temp_thresh, gas_thresh, alert_email, fire_email, hospital_email FROM settings LIMIT 1")
+            cur.execute("SELECT alert_email, fire_email, hospital_email, temp_thresh, gas_thresh FROM settings LIMIT 1")
             row = cur.fetchone()
 
             if not row:
                 return {"message": "Settings not found."}
 
-            temp_thresh, gas_thresh, alert_email, fire_email, hospital_email = row
+            alert_email, fire_email, hospital_email, temp_thresh, gas_thresh = row
 
             # Check for conditions
             if request.flame == 1:
