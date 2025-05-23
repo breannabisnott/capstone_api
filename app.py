@@ -196,10 +196,12 @@ async def new_data(request:SensorData):
             cur.execute("""SELECT alert_email, fire_email, hospital_email, temp_thresh, gas_thresh FROM settings_data LIMIT 1""")
             row = cur.fetchone()
 
-            if not row:
-                return {"message": "Settings not found."}
+            alert_email = row["alert_email"]
+            fire_email = row["fire_email"]
+            hospital_email = row["hospital_email"]
+            temp_thresh = float(row["temp_thresh"])
+            gas_thresh = float(row["gas_thresh"])
 
-            alert_email, fire_email, hospital_email, temp_thresh, gas_thresh = row
 
             for email in [alert_email, fire_email, hospital_email]:
                 if not email or "@" not in email:
