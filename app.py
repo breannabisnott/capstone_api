@@ -178,6 +178,8 @@ async def send_email(pdf: UploadFile = File(...), email: str = Form(...)):
 @app.post("/data")
 async def new_data(request:SensorData):
     request.time_stamp = datetime.now()
+    messages = []
+
     with get_db_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -199,20 +201,22 @@ async def new_data(request:SensorData):
 
             alert_email, fire_email, hospital_email, temp_thresh, gas_thresh = row
 
+            print("Fetched settings:", row)
+
             # Check for conditions
             if request.flame == 1:
                 send_email_alert(request.device_id, request.lat, request.lng, alert_email, fire_email, hospital_email)
-                return {"message": "Fire alert sent!"}
+                messages.append("Fire alert sent!")
 
             if request.temperature > temp_thresh:
                 send_temp_threshold_email(request.device_id, request.lat, request.lng, alert_email)
-                return {"message": "Temp threshold alert sent!"}
+                messages.append("Temp threshold alert sent!")
 
             if request.gas_concentration > gas_thresh:
                 send_gas_threshold_email(request.device_id, request.lat, request.lng, alert_email)
-                return {"message": "Gas threshold alert sent!"}
-    
-    return {"message": "success"}
+                messages.append("Gas threshold alert sent!")
+
+    return {"message": messages or ["Success - No alerts triggered."]}
 
 @app.get("/data/{device_id}")
 async def get_all_data(device_id: str, page_size:int = Query(None, description="number of records returned"), page_number:int = Query(None, description="number of records to offset by")):
