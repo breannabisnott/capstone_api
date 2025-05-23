@@ -201,7 +201,9 @@ async def new_data(request:SensorData):
 
             alert_email, fire_email, hospital_email, temp_thresh, gas_thresh = row
 
-            print("Fetched settings:", row)
+            for email in [alert_email, fire_email, hospital_email]:
+                if not email or "@" not in email:
+                    return {"message": f"Invalid email address in settings: {email}"}
 
             # Check for conditions
             if request.flame == 1:
