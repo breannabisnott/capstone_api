@@ -83,11 +83,17 @@ RECEIVER_EMAIL = "breanna.bisnott@gmail.com"
 def send_email_alert(device_id: str, lat: float, lng:float, alert_email:str, fire_email:str, hospital_email:str):
     """Send an email alert when sensor value is 0."""
     subject = f"🚨 FIRE DETECTED by device: {device_id}!"
-    body = f"Warning! Device {device_id} has detected a flame. Please check the system immediately.\nDevice Location:\nLatitude: {lat}\nLongitude: {lng}"
-    
+    body = (
+        f"Warning! Device {device_id} has detected a flame.\n\n"
+        f"📍 Location:\nLatitude: {lat}\nLongitude: {lng}\n\n"
+        "Please check the system immediately."
+    )
+
+    # Prepare email
     msg = MIMEMultipart()
     msg["From"] = SENDER_EMAIL
-    msg["To"] = alert_email, fire_email, hospital_email
+    recipients = [alert_email, fire_email, hospital_email]
+    msg["To"] = ", ".join(recipients)  # Fix: use comma-separated string
     msg["Subject"] = subject
     msg.attach(MIMEText(body, "plain"))
 
@@ -95,12 +101,10 @@ def send_email_alert(device_id: str, lat: float, lng:float, alert_email:str, fir
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls()
             server.login(SENDER_EMAIL, SENDER_PASSWORD)
-            server.sendmail(SENDER_EMAIL, alert_email, msg.as_string())
-            server.sendmail(SENDER_EMAIL, fire_email, msg.as_string())
-            server.sendmail(SENDER_EMAIL, hospital_email, msg.as_string())
-        print(f" Email alert sent for Device {device_id}")
+            server.sendmail(SENDER_EMAIL, recipients, msg.as_string())  # Send to all at once
+        print(f"✅ Email alert sent for Device {device_id}")
     except Exception as e:
-        print(f" Failed to send email: {e}")
+        print(f"❌ Failed to send email: {e}")
 
 def send_temp_threshold_email(device_id: str, lat: float, lng:float, alert_email:str):
     """Send an email alert when sensor value is 0."""
