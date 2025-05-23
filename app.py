@@ -172,7 +172,7 @@ async def send_email(pdf: UploadFile = File(...), email: str = Form(...)):
         return JSONResponse(content={"message": f"An unexpected error occurred: {str(e)}"}, status_code=500)
     
 @app.post("/data")
-async def new_data(request:SensorData, settings:SettingsData):
+async def new_data(request:SensorData):
     request.time_stamp = datetime.now()
     with get_db_connection() as conn:
         with conn.cursor() as cur:
@@ -186,17 +186,27 @@ async def new_data(request:SensorData, settings:SettingsData):
                 (request.device_id, request.time_stamp, request.temperature, request.flame, request.flame_level, request.gas, request.gas_concentration, request.oxygen_concentration, request.humidity, request.lat, request.lng, request.accuracy)
             )
             conn.commit()
-    if request.flame == 1:
-        send_email_alert(request.device_id, request.lat, request.lng, settings.alert_email, settings.fire_email, settings.hospital_email)
-        return {"message": "Alert sent!", "sensor_id": request.device_id, "lat": request.lat, "lng": request.lng}
+            # Fetch the current settings from DB
+            cur.execute("SELECT temp_thresh, gas_thresh, alert_email, fire_email, hospital_email FROM settings LIMIT 1")
+            row = cur.fetchone()
 
-    if request.temperature > settings.temp_thresh:
-        send_temp_threshold_email(request.device_id, request.lat, request.lng, settings.alert_email)
-        return {"message": "Alert sent!", "sensor_id": request.device_id, "lat": request.lat, "lng": request.lng}
+            if not row:
+                return {"message": "Settings not found."}
 
-    if request.gas_concentration > settings.gas_thresh:
-        send_gas_threshold_email(request.device_id, request.lat, request.lng, settings.alert_email)
-        return {"message": "Alert sent!", "sensor_id": request.device_id, "lat": request.lat, "lng": request.lng}
+            temp_thresh, gas_thresh, alert_email, fire_email, hospital_email = row
+
+            # Check for conditions
+            if request.flame == 1:
+                send_email_alert(request.device_id, request.lat, request.lng, alert_email, fire_email, hospital_email)
+                return {"message": "Fire alert sent!"}
+
+            if request.temperature > temp_thresh:
+                send_temp_threshold_email(request.device_id, request.lat, request.lng, alert_email)
+                return {"message": "Temp threshold alert sent!"}
+
+            if request.gas_concentration > gas_thresh:
+                send_gas_threshold_email(request.device_id, request.lat, request.lng, alert_email)
+                return {"message": "Gas threshold alert sent!"}
     
     return {"message": "success"}
 
