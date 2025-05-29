@@ -106,6 +106,32 @@ def send_email_alert(device_id: str, lat: float, lng:float, alert_email:str, fir
     except Exception as e:
         print(f"❌ Failed to send email: {e}")
 
+def send_o2_email_alert(device_id: str, lat: float, lng:float, alert_email:str, fire_email:str, hospital_email:str):
+    """Send an email alert when sensor value is 0."""
+    subject = f"🚨 Fire & Dangerous O2 Levels detected by device: {device_id}!"
+    body = (
+        f"Warning! Device {device_id} has detected a flame and dangerously low 02 levels.\n\n"
+        f"📍 Location:\nLatitude: {lat}\nLongitude: {lng}\n\n"
+        "Please check the system immediately and send an ambulance."
+    )
+
+    # Prepare email
+    msg = MIMEMultipart()
+    msg["From"] = SENDER_EMAIL
+    recipients = [alert_email, fire_email, hospital_email]
+    msg["To"] = ", ".join(recipients)  # Fix: use comma-separated string
+    msg["Subject"] = subject
+    msg.attach(MIMEText(body, "plain"))
+
+    try:
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()
+            server.login(SENDER_EMAIL, SENDER_PASSWORD)
+            server.sendmail(SENDER_EMAIL, recipients, msg.as_string())  # Send to all at once
+        print(f"✅ Email alert sent for Device {device_id}")
+    except Exception as e:
+        print(f"❌ Failed to send email: {e}")
+
 def send_temp_threshold_email(device_id: str, lat: float, lng:float, alert_email:str):
     """Send an email alert when sensor value is 0."""
     subject = f"🚨 Device: {device_id} has detected HIGH TEMPERATURE!"
@@ -208,15 +234,18 @@ async def new_data(request:SensorData):
                     return {"message": f"Invalid email address in settings: {email}"}
 
             # Check for conditions
-            if request.flame == 1:
-                send_email_alert(request.device_id, request.lat, request.lng, alert_email, fire_email, hospital_email)
-                messages.append("Fire alert sent!")
+            if request.flame_level < 2048 and request.temperature > temp_thresh and request.temperature > temp_thresh:
+                if request.oxygen_concentration < 19.5:
+                    send_email_alert(request.device_id, request.lat, request.lng, alert_email, fire_email, hospital_email)
+                    messages.append("Fire & O2 alert sent!")
+                else:
+                    send_email_alert(request.device_id, request.lat, request.lng, alert_email, fire_email, hospital_email)
+                    messages.append("Fire alert sent!")
 
-            if request.temperature > temp_thresh:
+            elif request.temperature > temp_thresh:
                 send_temp_threshold_email(request.device_id, request.lat, request.lng, alert_email)
                 messages.append("Temp threshold alert sent!")
-
-            if request.gas_concentration > gas_thresh:
+            elif request.gas_concentration > gas_thresh:
                 send_gas_threshold_email(request.device_id, request.lat, request.lng, alert_email)
                 messages.append("Gas threshold alert sent!")
 
