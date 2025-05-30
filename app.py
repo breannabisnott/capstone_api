@@ -234,7 +234,7 @@ async def new_data(request:SensorData):
                     return {"message": f"Invalid email address in settings: {email}"}
 
             # Check for conditions
-            if request.flame_level < 2048 and request.temperature > temp_thresh and request.temperature > temp_thresh:
+            if request.flame_level < 2048 and request.temperature > temp_thresh and request.gas_concentration > gas_thresh:
                 if request.oxygen_concentration < 19.5:
                     send_email_alert(request.device_id, request.lat, request.lng, alert_email, fire_email, hospital_email)
                     messages.append("Fire & O2 alert sent!")
@@ -250,6 +250,50 @@ async def new_data(request:SensorData):
                 messages.append("Gas threshold alert sent!")
 
     return {"message": messages or ["Success - No alerts triggered."]}
+
+@app.get("/siren-triggers/{device_id}")
+async def get_siren_triggers(device_id: str):
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            # Get the latest sensor data
+            cur.execute(
+                """SELECT flame, flame_level, temperature, gas_concentration 
+                   FROM sensor_data 
+                   WHERE device_id = %s 
+                   ORDER BY time_stamp DESC 
+                   LIMIT 1""",
+                [device_id]
+            )
+            sensor_data = cur.fetchone()
+            
+            if not sensor_data:
+                return {
+                    "fire_trigger": False,
+                    "temp_trigger": False,
+                    "gas_trigger": False
+                }
+            
+            # Get threshold settings
+            cur.execute(
+                """SELECT temp_thresh, gas_thresh 
+                   FROM settings_data 
+                   LIMIT 1"""
+            )
+            settings = cur.fetchone()
+            
+            temp_thresh = float(settings["temp_thresh"]) if settings else 50.0
+            gas_thresh = float(settings["gas_thresh"]) if settings else 3000.0
+            
+            # Calculate triggers
+            fire_trigger = sensor_data["flame_level"] < 2048 and sensor_data["temperature"] > temp_thresh and sensor_data["gas_concentration"] > gas_thresh
+            temp_trigger = sensor_data["temperature"] > temp_thresh
+            gas_trigger = sensor_data["gas_concentration"] > gas_thresh
+            
+            return {
+                "fire_trigger": bool(fire_trigger),
+                "temp_trigger": bool(temp_trigger),
+                "gas_trigger": bool(gas_trigger)
+            }
 
 @app.get("/data/{device_id}")
 async def get_all_data(device_id: str, page_size:int = Query(None, description="number of records returned"), page_number:int = Query(None, description="number of records to offset by")):
