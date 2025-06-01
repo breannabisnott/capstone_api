@@ -676,19 +676,120 @@ def send_gas_threshold_email(device_id: str, lat: float, lng:float, alert_email:
     except Exception as e:
         print(f" Failed to send email: {e}")
 
-@app.post("/send-email")
-async def send_email(
-    pdf: UploadFile = File(...),
-    email: str = Form(...)
-):
-    try:
-        # Create the multipart email
-        msg = MIMEMultipart("mixed")
-        msg["From"] = SENDER_EMAIL
-        msg["To"] = email
-        msg["Subject"] = "🔥 Fyah Alarm Incident Report"
+# @app.post("/send-email")
+# async def send_email(
+#     pdf: UploadFile = File(...),
+#     email: str = Form(...)
+# ):
+#     try:
+#         # Create the multipart email
+#         msg = MIMEMultipart("mixed")
+#         msg["From"] = SENDER_EMAIL
+#         msg["To"] = email
+#         msg["Subject"] = "🔥 Fyah Alarm Incident Report"
 
-        # Styled HTML email body
+#         # Styled HTML email body
+#         html_body = f"""
+#         <!DOCTYPE html>
+#         <html>
+#         <head>
+#             <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans&display=swap" rel="stylesheet">
+#             <style>
+#                 body {{
+#                     font-family: 'Open Sans', Arial, sans-serif;
+#                     background-color: #E5D0AC;
+#                     margin: 0; padding: 0;
+#                 }}
+#                 .email-container {{
+#                     background-color: white;
+#                     border-radius: 8px;
+#                     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+#                     margin: 20px auto;
+#                     max-width: 600px;
+#                 }}
+#                 .header {{
+#                     background-color: #430707;
+#                     color: white;
+#                     text-align: center;
+#                     padding: 25px;
+#                     font-family: 'Montserrat', Arial, sans-serif;
+#                 }}
+#                 .logo {{ font-size: 24px; font-weight: bold; }}
+#                 .content {{
+#                     padding: 25px;
+#                     border-left: 4px solid #6d1111;
+#                 }}
+#                 .footer {{
+#                     font-size: 12px;
+#                     color: #777;
+#                     text-align: center;
+#                     padding: 15px;
+#                     background-color: #faf5f5;
+#                     border-top: 1px solid #E5D0AC;
+#                 }}
+#                 a {{
+#                     color: #6d1111;
+#                     text-decoration: none;
+#                 }}
+#             </style>
+#         </head>
+#         <body>
+#             <div class="email-container">
+#                 <div class="header">
+#                     <div class="logo">Fyah Alarm</div>
+#                     <h2>🔥 INCIDENT REPORT 🔥</h2>
+#                     <a href="https://fyahalarm.com" style="color: white;">Visit Our Website</a>
+#                 </div>
+#                 <div class="content">
+#                     <h4 style="color:#430707;">Attached Report</h4>
+#                     <p>Please find the incident report PDF attached to this email.</p>
+#                     <p>For more information, you can visit your dashboard:</p>
+#                     <a href="https://fyahalarm.com/overview.html">https://fyahalarm.com/overview.html</a>
+#                 </div>
+#                 <div class="footer">
+#                     <p>This is an automated alert from your fire detection system.</p>
+#                     <p>© {datetime.now().year} Fyah Alarm | <a href="https://fyahalarm.com">fyahalarm.com</a></p>
+#                 </div>
+#             </div>
+#         </body>
+#         </html>
+#         """
+
+#         # Attach HTML body
+#         html_part = MIMEText(html_body, "html")
+#         alt_part = MIMEMultipart("alternative")
+#         alt_part.attach(html_part)
+#         msg.attach(alt_part)
+
+#         # Attach PDF
+#         part = MIMEBase('application', 'octet-stream')
+#         part.set_payload(await pdf.read())
+#         encoders.encode_base64(part)
+#         part.add_header('Content-Disposition', f'attachment; filename="{pdf.filename}"')
+#         msg.attach(part)
+
+#         # Send email
+#         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+#             server.starttls()
+#             server.login(SENDER_EMAIL, SENDER_PASSWORD)
+#             server.send_message(msg)
+
+#         return JSONResponse(content={"message": "Email sent with styled body and PDF attached."}, status_code=200)
+
+#     except smtplib.SMTPException as e:
+#         return JSONResponse(content={"message": f"SMTP error: {str(e)}"}, status_code=500)
+#     except Exception as e:
+#         return JSONResponse(content={"message": f"Error: {str(e)}"}, status_code=500)
+
+@app.post("/send-email")
+async def send_email(pdf: UploadFile = File(...), email: str = Form(...)):
+    try:
+        # Create the email
+        msg = MIMEMultipart()
+        msg['From'] = SENDER_EMAIL
+        msg['To'] = email
+        msg['Subject'] = 'Fyah Alarm Incident Report PDF'
+
         html_body = f"""
         <!DOCTYPE html>
         <html>
@@ -697,39 +798,71 @@ async def send_email(
             <style>
                 body {{
                     font-family: 'Open Sans', Arial, sans-serif;
+                    line-height: 1.6;
+                    color: #333;
+                    max-width: 600px;
+                    margin: 0 auto;
+                    padding: 0;
                     background-color: #E5D0AC;
-                    margin: 0; padding: 0;
                 }}
                 .email-container {{
                     background-color: white;
                     border-radius: 8px;
+                    overflow: hidden;
                     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                    margin: 20px auto;
-                    max-width: 600px;
+                    margin: 20px 0;
                 }}
                 .header {{
                     background-color: #430707;
-                    color: white;
-                    text-align: center;
+                    color: #ffffff;
                     padding: 25px;
+                    text-align: center;
                     font-family: 'Montserrat', Arial, sans-serif;
                 }}
-                .logo {{ font-size: 24px; font-weight: bold; }}
+                .logo {{
+                    font-size: 24px;
+                    font-weight: bold;
+                    margin-bottom: 10px;
+                    color: #ffffff;
+                }}
+                .website-link {{
+                    color: #ffffff !important;
+                    text-decoration: none;
+                    font-size: 14px;
+                    display: inline-block;
+                    margin-top: 10px;
+                }}
                 .content {{
                     padding: 25px;
+                    background-color: white;
                     border-left: 4px solid #6d1111;
                 }}
+                .alert-title {{
+                    color: #430707;
+                    border-bottom: 2px solid #bd9999;
+                    padding-bottom: 10px;
+                }}
+                .pdf-notice {{
+                    background-color: #faf5f5;
+                    border: 1px dashed #6d1111;
+                    padding: 15px;
+                    margin: 20px 0;
+                    border-radius: 4px;
+                }}
+                .pdf-icon {{
+                    color: #430707;
+                    font-size: 24px;
+                    vertical-align: middle;
+                    margin-right: 10px;
+                }}
                 .footer {{
+                    margin-top: 20px;
                     font-size: 12px;
                     color: #777;
                     text-align: center;
                     padding: 15px;
-                    background-color: #faf5f5;
                     border-top: 1px solid #E5D0AC;
-                }}
-                a {{
-                    color: #6d1111;
-                    text-decoration: none;
+                    background-color: #faf5f5;
                 }}
             </style>
         </head>
@@ -737,49 +870,66 @@ async def send_email(
             <div class="email-container">
                 <div class="header">
                     <div class="logo">Fyah Alarm</div>
-                    <h2>🔥 INCIDENT REPORT 🔥</h2>
-                    <a href="https://fyahalarm.com" style="color: white;">Visit Our Website</a>
+                    <h2 style="margin: 10px 0; font-size: 28px; letter-spacing: 1px; color: #ffffff;">📄 INCIDENT REPORT</h2>
+                    <h3 style="margin: 5px 0; font-weight: normal; color: #ffffff;">Device: {device_id}</h3>
+                    <a href="https://fyahalarm.com" class="website-link" style="color: #ffffff;">View Full Dashboard</a>
                 </div>
+                
                 <div class="content">
-                    <h4 style="color:#430707;">Attached Report</h4>
-                    <p>Please find the incident report PDF attached to this email.</p>
-                    <p>For more information, you can visit your dashboard:</p>
-                    <a href="https://fyahalarm.com/overview.html">https://fyahalarm.com/overview.html</a>
+                    <h4 class="alert-title">Incident Documentation</h4>
+                    <p>Your detailed incident report is attached to this email as a PDF document.</p>
+                    
+                    <div class="pdf-notice">
+                        <span class="pdf-icon">📎</span>
+                        <strong>Attached Report Contains:</strong>
+                        <ul style="margin: 10px 0 0 20px;">
+                            <li>Full incident details and timeline</li>
+                            <li>Device sensor readings</li>
+                            <li>Technical analysis</li>
+                            <li>Recommended actions</li>
+                        </ul>
+                    </div>
+                    
+                    <p style="margin-top: 20px;">Please review the attached report for complete information about this incident.</p>
+                    
+                    <div style="margin-top: 25px; padding: 15px; background-color: #faf5f5; border-radius: 4px;">
+                        <p style="margin: 0; color: #430707;">For real-time monitoring:</p>
+                        <a href="https://fyahalarm.com/overview.html" 
+                        style="color: #6d1111; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 8px;">
+                        Access Live Dashboard
+                        </a>
+                    </div>
                 </div>
+                
                 <div class="footer">
-                    <p>This is an automated alert from your fire detection system.</p>
-                    <p>© {datetime.now().year} Fyah Alarm | <a href="https://fyahalarm.com">fyahalarm.com</a></p>
+                    <p>This document contains sensitive information about a detected incident.</p>
+                    <p>© {datetime.now().year} Fyah Alarm | <a href="https://fyahalarm.com" style="color: #6d1111; text-decoration: none;">fyahalarm.com</a></p>
                 </div>
             </div>
         </body>
         </html>
         """
 
-        # Attach HTML body
-        html_part = MIMEText(html_body, "html")
-        alt_part = MIMEMultipart("alternative")
-        alt_part.attach(html_part)
-        msg.attach(alt_part)
-
-        # Attach PDF
+        # Attach the PDF
         part = MIMEBase('application', 'octet-stream')
         part.set_payload(await pdf.read())
         encoders.encode_base64(part)
         part.add_header('Content-Disposition', f'attachment; filename="{pdf.filename}"')
         msg.attach(part)
+        msg.attach(MIMEText(html_body, "html"))
 
-        # Send email
+        # Send the email
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls()
             server.login(SENDER_EMAIL, SENDER_PASSWORD)
             server.send_message(msg)
 
-        return JSONResponse(content={"message": "Email sent with styled body and PDF attached."}, status_code=200)
+        return JSONResponse(content={"message": "Email sent successfully!"}, status_code=200)
 
     except smtplib.SMTPException as e:
-        return JSONResponse(content={"message": f"SMTP error: {str(e)}"}, status_code=500)
+        return JSONResponse(content={"message": f"Failed to send email: {str(e)}"}, status_code=500)
     except Exception as e:
-        return JSONResponse(content={"message": f"Error: {str(e)}"}, status_code=500)
+        return JSONResponse(content={"message": f"An unexpected error occurred: {str(e)}"}, status_code=500)
     
 @app.post("/data")
 async def new_data(request:SensorData):
