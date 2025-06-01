@@ -6,7 +6,7 @@ from email import encoders
 import psycopg
 from psycopg.rows import dict_row
 from pydantic import BaseModel, EmailStr
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 from dotenv import load_dotenv
 import smtplib
@@ -22,6 +22,8 @@ load_dotenv()
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+cooldown_tracker = {}  # e.g. {'device_id_or_email': datetime}
+EMAIL_COOLDOWN = timedelta(minutes=2)
 
 origins = [ "http://127.0.0.1:5501" , "http://localhost:5501", "http://fyahalarm.com", "https://fyahalarm.com", "http://127.0.0.1:8000"]
 
@@ -82,6 +84,17 @@ RECEIVER_EMAIL = "breanna.bisnott@gmail.com"
 
 def send_email_alert(device_id: str, lat: float, lng:float, alert_email:str, fire_email:str, hospital_email:str):
     """Send an email alert when sensor value is 0."""
+    
+    now = datetime.utcnow()
+    
+    # Use device_id OR alert_email as the key (whichever makes more sense for you)
+    cooldown_key = f"fire:{fire_email}"
+
+    last_sent = cooldown_tracker.get(cooldown_key)
+    if last_sent and now - last_sent < EMAIL_COOLDOWN:
+        print(f"⚠️ Email not sent: cooldown active for {cooldown_key} (last sent at {last_sent})")
+        return  # Cooldown active — skip sending
+
     subject = f"🚨 FIRE DETECTED!"
     html_body = f"""
     <!DOCTYPE html>
@@ -219,25 +232,29 @@ def send_email_alert(device_id: str, lat: float, lng:float, alert_email:str, fir
     msg["Subject"] = subject
     msg.attach(MIMEText(html_body, "html"))
 
-    # plain_text = (
-    #     f"Warning! Device {device_id} has detected a flame.\n\n"
-    #     f"Location:\nLatitude: {lat}\nLongitude: {lng}\n\n"
-    #     f"Google Maps link: https://www.google.com/maps?q={lat},{lng}\n\n"
-    #     "Please check the system immediately."
-    # )
-    # msg.attach(MIMEText(plain_text, "plain"))
-
     try:
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls()
             server.login(SENDER_EMAIL, SENDER_PASSWORD)
             server.sendmail(SENDER_EMAIL, recipients, msg.as_string())  # Send to all at once
+        cooldown_tracker[cooldown_key] = now
         print(f"✅ Email alert sent for Device {device_id}")
     except Exception as e:
         print(f"❌ Failed to send email: {e}")
 
 def send_o2_email_alert(device_id: str, lat: float, lng:float, alert_email:str, fire_email:str, hospital_email:str):
     """Send an email alert when sensor value is 0."""
+    
+    now = datetime.utcnow()
+    
+    # Use device_id OR alert_email as the key (whichever makes more sense for you)
+    cooldown_key = f"hospital:{hospital_email}"
+
+    last_sent = cooldown_tracker.get(cooldown_key)
+    if last_sent and now - last_sent < EMAIL_COOLDOWN:
+        print(f"⚠️ Email not sent: cooldown active for {cooldown_key} (last sent at {last_sent})")
+        return  # Cooldown active — skip sending
+    
     subject = f"🚨 Fire & Dangerous O2 Levels detected!"
     html_body = f"""
     <!DOCTYPE html>
@@ -380,12 +397,23 @@ def send_o2_email_alert(device_id: str, lat: float, lng:float, alert_email:str, 
             server.starttls()
             server.login(SENDER_EMAIL, SENDER_PASSWORD)
             server.sendmail(SENDER_EMAIL, recipients, msg.as_string())  # Send to all at once
+        cooldown_tracker[cooldown_key] = now
         print(f"✅ Email alert sent for Device {device_id}")
     except Exception as e:
         print(f"❌ Failed to send email: {e}")
 
 def send_temp_threshold_email(device_id: str, lat: float, lng:float, alert_email:str):
     """Send an email alert when sensor value is 0."""
+    now = datetime.utcnow()
+    
+    # Use device_id OR alert_email as the key (whichever makes more sense for you)
+    cooldown_key = f"alert:{alert_email}"
+
+    last_sent = cooldown_tracker.get(cooldown_key)
+    if last_sent and now - last_sent < EMAIL_COOLDOWN:
+        print(f"⚠️ Email not sent: cooldown active for {cooldown_key} (last sent at {last_sent})")
+        return  # Cooldown active — skip sending
+    
     subject = f"🚨 HIGH TEMPERATURE DETECTED!"
     html_body = f"""
     <!DOCTYPE html>
@@ -532,6 +560,17 @@ def send_temp_threshold_email(device_id: str, lat: float, lng:float, alert_email
 
 def send_gas_threshold_email(device_id: str, lat: float, lng:float, alert_email:str):
     """Send an email alert when sensor value is 0."""
+   
+    now = datetime.utcnow()
+        
+    # Use device_id OR alert_email as the key (whichever makes more sense for you)
+    cooldown_key = f"alert:{alert_email}"
+
+    last_sent = cooldown_tracker.get(cooldown_key)
+    if last_sent and now - last_sent < EMAIL_COOLDOWN:
+        print(f"⚠️ Email not sent: cooldown active for {cooldown_key} (last sent at {last_sent})")
+        return  # Cooldown active — skip sending
+    
     subject = f"🚨 HIGH GAS CONCENTRATION DETECTED!"
     html_body = f"""
     <!DOCTYPE html>
@@ -672,6 +711,7 @@ def send_gas_threshold_email(device_id: str, lat: float, lng:float, alert_email:
             server.starttls()
             server.login(SENDER_EMAIL, SENDER_PASSWORD)
             server.sendmail(SENDER_EMAIL, alert_email, msg.as_string())
+        cooldown_tracker[cooldown_key] = now
         print(f" Temp Email alert sent for Device {device_id}")
     except Exception as e:
         print(f" Failed to send email: {e}")
