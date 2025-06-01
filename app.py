@@ -281,7 +281,7 @@ async def get_siren_triggers(device_id: str):
             gas_thresh = float(settings["gas_thresh"]) if settings else 3000.0
             
             # Calculate triggers
-            fire_trigger = sensor_data["flame_level"] < 2048 and sensor_data["temperature"] >= temp_thresh and sensor_data["gas_concentration"] >= gas_thresh
+            fire_trigger = sensor_data["flame_level"] < 2048 and sensor_data["temperature"] > temp_thresh and sensor_data["gas_concentration"] > gas_thresh
             temp_trigger = sensor_data["temperature"] > temp_thresh
             gas_trigger = sensor_data["gas_concentration"] > gas_thresh
             
