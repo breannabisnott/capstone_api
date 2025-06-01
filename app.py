@@ -871,7 +871,7 @@ async def send_email(pdf: UploadFile = File(...), email: str = Form(...)):
                 <div class="header">
                     <div class="logo">Fyah Alarm</div>
                     <h2 style="margin: 10px 0; font-size: 28px; letter-spacing: 1px; color: #ffffff;">📄 INCIDENT REPORT</h2>
-                    <h3 style="margin: 5px 0; font-weight: normal; color: #ffffff;">Device: {device_id}</h3>
+                    
                     <a href="https://fyahalarm.com" class="website-link" style="color: #ffffff;">View Full Dashboard</a>
                 </div>
                 
@@ -885,8 +885,6 @@ async def send_email(pdf: UploadFile = File(...), email: str = Form(...)):
                         <ul style="margin: 10px 0 0 20px;">
                             <li>Full incident details and timeline</li>
                             <li>Device sensor readings</li>
-                            <li>Technical analysis</li>
-                            <li>Recommended actions</li>
                         </ul>
                     </div>
                     
