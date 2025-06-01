@@ -82,12 +82,134 @@ RECEIVER_EMAIL = "breanna.bisnott@gmail.com"
 
 def send_email_alert(device_id: str, lat: float, lng:float, alert_email:str, fire_email:str, hospital_email:str):
     """Send an email alert when sensor value is 0."""
-    subject = f"🚨 FIRE DETECTED by device: {device_id}!"
-    body = (
-        f"Warning! Device {device_id} has detected a flame.\n\n"
-        f"📍 Location:\nLatitude: {lat}\nLongitude: {lng}\n\n"
-        "Please check the system immediately."
-    )
+    subject = f"🚨 FIRE DETECTED!"
+    html_body = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans&display=swap" rel="stylesheet">
+        <style>
+            body {{
+                font-family: 'Open Sans', Arial, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 0;
+                background-color: #E5D0AC;
+            }}
+            .email-container {{
+                background-color: white;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                margin: 20px 0;
+            }}
+            .header {{
+                background-color: #430707;
+                color: #ffffff; /* Changed to pure white */
+                padding: 25px;
+                text-align: center;
+                font-family: 'Montserrat', Arial, sans-serif;
+            }}
+            .logo {{
+                font-size: 24px;
+                font-weight: bold;
+                margin-bottom: 10px;
+                color: #ffffff; /* Changed to white */
+            }}
+            .website-link {{
+                color: #ffffff !important; /* Forced white */
+                text-decoration: none;
+                font-size: 14px;
+                display: inline-block;
+                margin-top: 10px;
+            }}
+            .content {{
+                padding: 25px;
+                background-color: white;
+                border-left: 4px solid #6d1111;
+            }}
+            .alert-title {{
+                color: #430707;
+                border-bottom: 2px solid #bd9999;
+                padding-bottom: 10px;
+            }}
+            .map-link {{
+                display: inline-block;
+                margin: 15px 0;
+                padding: 12px 20px;
+                background-color: #6d1111;
+                color: #ffffff !important; /* Forced white */
+                text-decoration: none;
+                border-radius: 4px;
+                font-weight: bold;
+                font-size: 16px;
+                transition: background-color 0.3s;
+            }}
+            .map-link:hover {{
+                background-color: #430707; /* Darker on hover */
+            }}
+            .footer {{
+                margin-top: 20px;
+                font-size: 12px;
+                color: #777;
+                text-align: center;
+                padding: 15px;
+                border-top: 1px solid #E5D0AC;
+                background-color: #faf5f5;
+            }}
+            .footer a {{
+                color: #6d1111;
+                text-decoration: none;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="email-container">
+            <div class="header">
+                <div class="logo">Fyah Alarm</div>
+                <h2 style="margin: 10px 0; font-size: 28px; letter-spacing: 1px; color: #ffffff;">🔥 FIRE ALERT DETECTED 🔥</h2>
+                <h3 style="margin: 5px 0; font-weight: normal; color: #ffffff;">Device: {device_id}</h3>
+                <a href="https://fyahalarm.com" class="website-link" style="color: #ffffff;">Visit Our Website</a>
+            </div>
+            
+            <div class="content">
+                <h4 class="alert-title">Alert Details</h4>
+                <p><strong style="color: #430707;">Warning!</strong> A flame has been detected by device <strong>{device_id}</strong>.</p>
+            
+                <h4 style="margin-bottom: 10px; color: #6d1111;">📍 Location Details:</h4>
+                <ul style="margin-top: 5px;">
+                    <li>Latitude: {lat}</li>
+                    <li>Longitude: {lng}</li>
+                </ul>
+                
+                <a href="https://www.google.com/maps?q={lat},{lng}" 
+                   class="map-link" 
+                   target="_blank"
+                   style="color: #ffffff;"> 
+                   View on Google Maps
+                </a>
+                
+                <p style="margin-top: 20px;">Please take immediate action and verify the situation.</p>
+                
+                <div style="margin-top: 25px; padding: 15px; background-color: #faf5f5; border-radius: 4px;">
+                    <p style="margin: 0; color: #430707;">For more information, visit our dashboard:</p>
+                    <a href="https://fyahalarm.com/overview.html" 
+                       style="color: #6d1111; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 8px;">
+                       https://fyahalarm.com/overview.html
+                    </a>
+                </div>
+            </div>
+            
+            <div class="footer">
+                <p>This is an automated alert from your fire detection system.</p>
+                <p>© {datetime.now().year} Fyah Alarm | <a href="https://fyahalarm.com">fyahalarm.com</a></p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
 
     # Prepare email
     msg = MIMEMultipart()
@@ -95,7 +217,15 @@ def send_email_alert(device_id: str, lat: float, lng:float, alert_email:str, fir
     recipients = [alert_email, fire_email, hospital_email]
     msg["To"] = ", ".join(recipients)  # Fix: use comma-separated string
     msg["Subject"] = subject
-    msg.attach(MIMEText(body, "plain"))
+    msg.attach(MIMEText(html_body, "html"))
+
+    # plain_text = (
+    #     f"Warning! Device {device_id} has detected a flame.\n\n"
+    #     f"Location:\nLatitude: {lat}\nLongitude: {lng}\n\n"
+    #     f"Google Maps link: https://www.google.com/maps?q={lat},{lng}\n\n"
+    #     "Please check the system immediately."
+    # )
+    # msg.attach(MIMEText(plain_text, "plain"))
 
     try:
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
@@ -108,12 +238,134 @@ def send_email_alert(device_id: str, lat: float, lng:float, alert_email:str, fir
 
 def send_o2_email_alert(device_id: str, lat: float, lng:float, alert_email:str, fire_email:str, hospital_email:str):
     """Send an email alert when sensor value is 0."""
-    subject = f"🚨 Fire & Dangerous O2 Levels detected by device: {device_id}!"
-    body = (
-        f"Warning! Device {device_id} has detected a flame and dangerously low 02 levels.\n\n"
-        f"📍 Location:\nLatitude: {lat}\nLongitude: {lng}\n\n"
-        "Please check the system immediately and send an ambulance."
-    )
+    subject = f"🚨 Fire & Dangerous O2 Levels detected!"
+    html_body = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans&display=swap" rel="stylesheet">
+        <style>
+            body {{
+                font-family: 'Open Sans', Arial, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 0;
+                background-color: #E5D0AC;
+            }}
+            .email-container {{
+                background-color: white;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                margin: 20px 0;
+            }}
+            .header {{
+                background-color: #430707;
+                color: #ffffff; /* Changed to pure white */
+                padding: 25px;
+                text-align: center;
+                font-family: 'Montserrat', Arial, sans-serif;
+            }}
+            .logo {{
+                font-size: 24px;
+                font-weight: bold;
+                margin-bottom: 10px;
+                color: #ffffff; /* Changed to white */
+            }}
+            .website-link {{
+                color: #ffffff !important; /* Forced white */
+                text-decoration: none;
+                font-size: 14px;
+                display: inline-block;
+                margin-top: 10px;
+            }}
+            .content {{
+                padding: 25px;
+                background-color: white;
+                border-left: 4px solid #6d1111;
+            }}
+            .alert-title {{
+                color: #430707;
+                border-bottom: 2px solid #bd9999;
+                padding-bottom: 10px;
+            }}
+            .map-link {{
+                display: inline-block;
+                margin: 15px 0;
+                padding: 12px 20px;
+                background-color: #6d1111;
+                color: #ffffff !important; /* Forced white */
+                text-decoration: none;
+                border-radius: 4px;
+                font-weight: bold;
+                font-size: 16px;
+                transition: background-color 0.3s;
+            }}
+            .map-link:hover {{
+                background-color: #430707; /* Darker on hover */
+            }}
+            .footer {{
+                margin-top: 20px;
+                font-size: 12px;
+                color: #777;
+                text-align: center;
+                padding: 15px;
+                border-top: 1px solid #E5D0AC;
+                background-color: #faf5f5;
+            }}
+            .footer a {{
+                color: #6d1111;
+                text-decoration: none;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="email-container">
+            <div class="header">
+                <div class="logo">Fyah Alarm</div>
+                <h2 style="margin: 10px 0; font-size: 28px; letter-spacing: 1px; color: #ffffff;">🔥 FIRE ALERT DETECTED 🔥</h2>
+                <h3 style="margin: 5px 0; font-weight: normal; color: #ffffff;">Device: {device_id}</h3>
+                <a href="https://fyahalarm.com" class="website-link" style="color: #ffffff;">Visit Our Website</a>
+            </div>
+            
+            <div class="content">
+                <h4 class="alert-title">Alert Details</h4>
+                <p><strong style="color: #430707;">Warning!</strong> A flame and dangerous oxygen levels have been detected by device <strong>{device_id}</strong>.</p>
+            
+                <h4 style="margin-bottom: 10px; color: #6d1111;">📍 Location Details:</h4>
+                <ul style="margin-top: 5px;">
+                    <li>Latitude: {lat}</li>
+                    <li>Longitude: {lng}</li>
+                </ul>
+                
+                <a href="https://www.google.com/maps?q={lat},{lng}" 
+                   class="map-link" 
+                   target="_blank"
+                   style="color: #ffffff;"> 
+                   View on Google Maps
+                </a>
+                
+                <p style="margin-top: 20px;">Please send an ambulance and take immediate action and verify the situation.</p>
+                
+                <div style="margin-top: 25px; padding: 15px; background-color: #faf5f5; border-radius: 4px;">
+                    <p style="margin: 0; color: #430707;">For more information, visit our dashboard:</p>
+                    <a href="https://fyahalarm.com/overview.html" 
+                       style="color: #6d1111; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 8px;">
+                       https://fyahalarm.com/overview.html
+                    </a>
+                </div>
+            </div>
+            
+            <div class="footer">
+                <p>This is an automated alert from your fire detection system.</p>
+                <p>© {datetime.now().year} Fyah Alarm | <a href="https://fyahalarm.com">fyahalarm.com</a></p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
 
     # Prepare email
     msg = MIMEMultipart()
@@ -121,7 +373,7 @@ def send_o2_email_alert(device_id: str, lat: float, lng:float, alert_email:str, 
     recipients = [alert_email, fire_email, hospital_email]
     msg["To"] = ", ".join(recipients)  # Fix: use comma-separated string
     msg["Subject"] = subject
-    msg.attach(MIMEText(body, "plain"))
+    msg.attach(MIMEText(html_body, "html"))
 
     try:
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
@@ -134,14 +386,140 @@ def send_o2_email_alert(device_id: str, lat: float, lng:float, alert_email:str, 
 
 def send_temp_threshold_email(device_id: str, lat: float, lng:float, alert_email:str):
     """Send an email alert when sensor value is 0."""
-    subject = f"🚨 Device: {device_id} has detected HIGH TEMPERATURE!"
-    body = f"Warning! Device {device_id} has detected a tempeature above your designated threshold. Please check the system immediately.\nDevice Location:\nLatitude: {lat}\nLongitude: {lng}"
-    
+    subject = f"🚨 HIGH TEMPERATURE DETECTED!"
+    html_body = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans&display=swap" rel="stylesheet">
+        <style>
+            body {{
+                font-family: 'Open Sans', Arial, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 0;
+                background-color: #E5D0AC;
+            }}
+            .email-container {{
+                background-color: white;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                margin: 20px 0;
+            }}
+            .header {{
+                background-color: #430707;
+                color: #ffffff; /* Changed to pure white */
+                padding: 25px;
+                text-align: center;
+                font-family: 'Montserrat', Arial, sans-serif;
+            }}
+            .logo {{
+                font-size: 24px;
+                font-weight: bold;
+                margin-bottom: 10px;
+                color: #ffffff; /* Changed to white */
+            }}
+            .website-link {{
+                color: #ffffff !important; /* Forced white */
+                text-decoration: none;
+                font-size: 14px;
+                display: inline-block;
+                margin-top: 10px;
+            }}
+            .content {{
+                padding: 25px;
+                background-color: white;
+                border-left: 4px solid #6d1111;
+            }}
+            .alert-title {{
+                color: #430707;
+                border-bottom: 2px solid #bd9999;
+                padding-bottom: 10px;
+            }}
+            .map-link {{
+                display: inline-block;
+                margin: 15px 0;
+                padding: 12px 20px;
+                background-color: #6d1111;
+                color: #ffffff !important; /* Forced white */
+                text-decoration: none;
+                border-radius: 4px;
+                font-weight: bold;
+                font-size: 16px;
+                transition: background-color 0.3s;
+            }}
+            .map-link:hover {{
+                background-color: #430707; /* Darker on hover */
+            }}
+            .footer {{
+                margin-top: 20px;
+                font-size: 12px;
+                color: #777;
+                text-align: center;
+                padding: 15px;
+                border-top: 1px solid #E5D0AC;
+                background-color: #faf5f5;
+            }}
+            .footer a {{
+                color: #6d1111;
+                text-decoration: none;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="email-container">
+            <div class="header">
+                <div class="logo">Fyah Alarm</div>
+                <h2 style="margin: 10px 0; font-size: 28px; letter-spacing: 1px; color: #ffffff;">🔥 HIGH TEMPERATURE DETECTED 🔥</h2>
+                <h3 style="margin: 5px 0; font-weight: normal; color: #ffffff;">Device: {device_id}</h3>
+                <a href="https://fyahalarm.com" class="website-link" style="color: #ffffff;">Visit Our Website</a>
+            </div>
+            
+            <div class="content">
+                <h4 class="alert-title">Alert Details</h4>
+                <p><strong style="color: #430707;">Warning!</strong> Device <strong>{device_id}</strong> has detected a tempeature above your designated threshold.</p>
+            
+                <h4 style="margin-bottom: 10px; color: #6d1111;">📍 Location Details:</h4>
+                <ul style="margin-top: 5px;">
+                    <li>Latitude: {lat}</li>
+                    <li>Longitude: {lng}</li>
+                </ul>
+                
+                <a href="https://www.google.com/maps?q={lat},{lng}" 
+                   class="map-link" 
+                   target="_blank"
+                   style="color: #ffffff;"> 
+                   View on Google Maps
+                </a>
+                
+                <p style="margin-top: 20px;">Please take immediate action and verify the situation.</p>
+                
+                <div style="margin-top: 25px; padding: 15px; background-color: #faf5f5; border-radius: 4px;">
+                    <p style="margin: 0; color: #430707;">For more information, visit our dashboard:</p>
+                    <a href="https://fyahalarm.com/overview.html" 
+                       style="color: #6d1111; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 8px;">
+                       https://fyahalarm.com/overview.html
+                    </a>
+                </div>
+            </div>
+            
+            <div class="footer">
+                <p>This is an automated alert from your fire detection system.</p>
+                <p>© {datetime.now().year} Fyah Alarm | <a href="https://fyahalarm.com">fyahalarm.com</a></p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+
     msg = MIMEMultipart()
     msg["From"] = SENDER_EMAIL
     msg["To"] = alert_email
     msg["Subject"] = subject
-    msg.attach(MIMEText(body, "plain"))
+    msg.attach(MIMEText(html_body, "html"))
 
     try:
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
@@ -154,14 +532,140 @@ def send_temp_threshold_email(device_id: str, lat: float, lng:float, alert_email
 
 def send_gas_threshold_email(device_id: str, lat: float, lng:float, alert_email:str):
     """Send an email alert when sensor value is 0."""
-    subject = f"🚨 Device: {device_id} has detected HIGH GAS CONCENTRATION!"
-    body = f"Warning! Device {device_id} has detected a gas concentration above your designated threshold. Please check the system immediately.\nDevice Location:\nLatitude: {lat}\nLongitude: {lng}"
-    
+    subject = f"🚨 HIGH GAS CONCENTRATION DETECTED!"
+    html_body = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans&display=swap" rel="stylesheet">
+        <style>
+            body {{
+                font-family: 'Open Sans', Arial, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 0;
+                background-color: #E5D0AC;
+            }}
+            .email-container {{
+                background-color: white;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                margin: 20px 0;
+            }}
+            .header {{
+                background-color: #430707;
+                color: #ffffff; /* Changed to pure white */
+                padding: 25px;
+                text-align: center;
+                font-family: 'Montserrat', Arial, sans-serif;
+            }}
+            .logo {{
+                font-size: 24px;
+                font-weight: bold;
+                margin-bottom: 10px;
+                color: #ffffff; /* Changed to white */
+            }}
+            .website-link {{
+                color: #ffffff !important; /* Forced white */
+                text-decoration: none;
+                font-size: 14px;
+                display: inline-block;
+                margin-top: 10px;
+            }}
+            .content {{
+                padding: 25px;
+                background-color: white;
+                border-left: 4px solid #6d1111;
+            }}
+            .alert-title {{
+                color: #430707;
+                border-bottom: 2px solid #bd9999;
+                padding-bottom: 10px;
+            }}
+            .map-link {{
+                display: inline-block;
+                margin: 15px 0;
+                padding: 12px 20px;
+                background-color: #6d1111;
+                color: #ffffff !important; /* Forced white */
+                text-decoration: none;
+                border-radius: 4px;
+                font-weight: bold;
+                font-size: 16px;
+                transition: background-color 0.3s;
+            }}
+            .map-link:hover {{
+                background-color: #430707; /* Darker on hover */
+            }}
+            .footer {{
+                margin-top: 20px;
+                font-size: 12px;
+                color: #777;
+                text-align: center;
+                padding: 15px;
+                border-top: 1px solid #E5D0AC;
+                background-color: #faf5f5;
+            }}
+            .footer a {{
+                color: #6d1111;
+                text-decoration: none;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="email-container">
+            <div class="header">
+                <div class="logo">Fyah Alarm</div>
+                <h2 style="margin: 10px 0; font-size: 28px; letter-spacing: 1px; color: #ffffff;">🔥 GAS DETECTED 🔥</h2>
+                <h3 style="margin: 5px 0; font-weight: normal; color: #ffffff;">Device: {device_id}</h3>
+                <a href="https://fyahalarm.com" class="website-link" style="color: #ffffff;">Visit Our Website</a>
+            </div>
+            
+            <div class="content">
+                <h4 class="alert-title">Alert Details</h4>
+                <p><strong style="color: #430707;">Warning!</strong> Device <strong>{device_id}</strong> has detected a gas level above your designated threshold.</p>
+            
+                <h4 style="margin-bottom: 10px; color: #6d1111;">📍 Location Details:</h4>
+                <ul style="margin-top: 5px;">
+                    <li>Latitude: {lat}</li>
+                    <li>Longitude: {lng}</li>
+                </ul>
+                
+                <a href="https://www.google.com/maps?q={lat},{lng}" 
+                   class="map-link" 
+                   target="_blank"
+                   style="color: #ffffff;"> 
+                   View on Google Maps
+                </a>
+                
+                <p style="margin-top: 20px;">Please take immediate action and verify the situation.</p>
+                
+                <div style="margin-top: 25px; padding: 15px; background-color: #faf5f5; border-radius: 4px;">
+                    <p style="margin: 0; color: #430707;">For more information, visit our dashboard:</p>
+                    <a href="https://fyahalarm.com/overview.html" 
+                       style="color: #6d1111; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 8px;">
+                       https://fyahalarm.com/overview.html
+                    </a>
+                </div>
+            </div>
+            
+            <div class="footer">
+                <p>This is an automated alert from your fire detection system.</p>
+                <p>© {datetime.now().year} Fyah Alarm | <a href="https://fyahalarm.com">fyahalarm.com</a></p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+
     msg = MIMEMultipart()
     msg["From"] = SENDER_EMAIL
     msg["To"] = alert_email
     msg["Subject"] = subject
-    msg.attach(MIMEText(body, "plain"))
+    msg.attach(MIMEText(html_body, "html"))
 
     try:
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
@@ -173,33 +677,109 @@ def send_gas_threshold_email(device_id: str, lat: float, lng:float, alert_email:
         print(f" Failed to send email: {e}")
 
 @app.post("/send-email")
-async def send_email(pdf: UploadFile = File(...), email: str = Form(...)):
+async def send_email(
+    pdf: UploadFile = File(...),
+    email: str = Form(...)
+):
     try:
-        # Create the email
-        msg = MIMEMultipart()
-        msg['From'] = SENDER_EMAIL
-        msg['To'] = email
-        msg['Subject'] = 'Incident Report PDF'
+        # Create the multipart email
+        msg = MIMEMultipart("mixed")
+        msg["From"] = SENDER_EMAIL
+        msg["To"] = email
+        msg["Subject"] = "🔥 Fyah Alarm Incident Report"
 
-        # Attach the PDF
+        # Styled HTML email body
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans&display=swap" rel="stylesheet">
+            <style>
+                body {{
+                    font-family: 'Open Sans', Arial, sans-serif;
+                    background-color: #E5D0AC;
+                    margin: 0; padding: 0;
+                }}
+                .email-container {{
+                    background-color: white;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                    margin: 20px auto;
+                    max-width: 600px;
+                }}
+                .header {{
+                    background-color: #430707;
+                    color: white;
+                    text-align: center;
+                    padding: 25px;
+                    font-family: 'Montserrat', Arial, sans-serif;
+                }}
+                .logo {{ font-size: 24px; font-weight: bold; }}
+                .content {{
+                    padding: 25px;
+                    border-left: 4px solid #6d1111;
+                }}
+                .footer {{
+                    font-size: 12px;
+                    color: #777;
+                    text-align: center;
+                    padding: 15px;
+                    background-color: #faf5f5;
+                    border-top: 1px solid #E5D0AC;
+                }}
+                a {{
+                    color: #6d1111;
+                    text-decoration: none;
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="email-container">
+                <div class="header">
+                    <div class="logo">Fyah Alarm</div>
+                    <h2>🔥 INCIDENT REPORT 🔥</h2>
+                    <a href="https://fyahalarm.com" style="color: white;">Visit Our Website</a>
+                </div>
+                <div class="content">
+                    <h4 style="color:#430707;">Attached Report</h4>
+                    <p>Please find the incident report PDF attached to this email.</p>
+                    <p>For more information, you can visit your dashboard:</p>
+                    <a href="https://fyahalarm.com/overview.html">https://fyahalarm.com/overview.html</a>
+                </div>
+                <div class="footer">
+                    <p>This is an automated alert from your fire detection system.</p>
+                    <p>© {datetime.now().year} Fyah Alarm | <a href="https://fyahalarm.com">fyahalarm.com</a></p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+
+        # Attach HTML body
+        html_part = MIMEText(html_body, "html")
+        alt_part = MIMEMultipart("alternative")
+        alt_part.attach(html_part)
+        msg.attach(alt_part)
+
+        # Attach PDF
         part = MIMEBase('application', 'octet-stream')
         part.set_payload(await pdf.read())
         encoders.encode_base64(part)
         part.add_header('Content-Disposition', f'attachment; filename="{pdf.filename}"')
         msg.attach(part)
 
-        # Send the email
+        # Send email
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls()
             server.login(SENDER_EMAIL, SENDER_PASSWORD)
             server.send_message(msg)
 
-        return JSONResponse(content={"message": "Email sent successfully!"}, status_code=200)
+        return JSONResponse(content={"message": "Email sent with styled body and PDF attached."}, status_code=200)
 
     except smtplib.SMTPException as e:
-        return JSONResponse(content={"message": f"Failed to send email: {str(e)}"}, status_code=500)
+        return JSONResponse(content={"message": f"SMTP error: {str(e)}"}, status_code=500)
     except Exception as e:
-        return JSONResponse(content={"message": f"An unexpected error occurred: {str(e)}"}, status_code=500)
+        return JSONResponse(content={"message": f"Error: {str(e)}"}, status_code=500)
     
 @app.post("/data")
 async def new_data(request:SensorData):
@@ -236,7 +816,7 @@ async def new_data(request:SensorData):
             # Check for conditions
             if request.flame_level < 2048 and request.temperature > temp_thresh and request.gas_concentration > gas_thresh:
                 if request.oxygen_concentration < 19.5:
-                    send_email_alert(request.device_id, request.lat, request.lng, alert_email, fire_email, hospital_email)
+                    send_o2_email_alert(request.device_id, request.lat, request.lng, alert_email, fire_email, hospital_email)
                     messages.append("Fire & O2 alert sent!")
                 else:
                     send_email_alert(request.device_id, request.lat, request.lng, alert_email, fire_email, hospital_email)
