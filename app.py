@@ -676,111 +676,6 @@ def send_gas_threshold_email(device_id: str, lat: float, lng:float, alert_email:
     except Exception as e:
         print(f" Failed to send email: {e}")
 
-# @app.post("/send-email")
-# async def send_email(
-#     pdf: UploadFile = File(...),
-#     email: str = Form(...)
-# ):
-#     try:
-#         # Create the multipart email
-#         msg = MIMEMultipart("mixed")
-#         msg["From"] = SENDER_EMAIL
-#         msg["To"] = email
-#         msg["Subject"] = "🔥 Fyah Alarm Incident Report"
-
-#         # Styled HTML email body
-#         html_body = f"""
-#         <!DOCTYPE html>
-#         <html>
-#         <head>
-#             <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans&display=swap" rel="stylesheet">
-#             <style>
-#                 body {{
-#                     font-family: 'Open Sans', Arial, sans-serif;
-#                     background-color: #E5D0AC;
-#                     margin: 0; padding: 0;
-#                 }}
-#                 .email-container {{
-#                     background-color: white;
-#                     border-radius: 8px;
-#                     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-#                     margin: 20px auto;
-#                     max-width: 600px;
-#                 }}
-#                 .header {{
-#                     background-color: #430707;
-#                     color: white;
-#                     text-align: center;
-#                     padding: 25px;
-#                     font-family: 'Montserrat', Arial, sans-serif;
-#                 }}
-#                 .logo {{ font-size: 24px; font-weight: bold; }}
-#                 .content {{
-#                     padding: 25px;
-#                     border-left: 4px solid #6d1111;
-#                 }}
-#                 .footer {{
-#                     font-size: 12px;
-#                     color: #777;
-#                     text-align: center;
-#                     padding: 15px;
-#                     background-color: #faf5f5;
-#                     border-top: 1px solid #E5D0AC;
-#                 }}
-#                 a {{
-#                     color: #6d1111;
-#                     text-decoration: none;
-#                 }}
-#             </style>
-#         </head>
-#         <body>
-#             <div class="email-container">
-#                 <div class="header">
-#                     <div class="logo">Fyah Alarm</div>
-#                     <h2>🔥 INCIDENT REPORT 🔥</h2>
-#                     <a href="https://fyahalarm.com" style="color: white;">Visit Our Website</a>
-#                 </div>
-#                 <div class="content">
-#                     <h4 style="color:#430707;">Attached Report</h4>
-#                     <p>Please find the incident report PDF attached to this email.</p>
-#                     <p>For more information, you can visit your dashboard:</p>
-#                     <a href="https://fyahalarm.com/overview.html">https://fyahalarm.com/overview.html</a>
-#                 </div>
-#                 <div class="footer">
-#                     <p>This is an automated alert from your fire detection system.</p>
-#                     <p>© {datetime.now().year} Fyah Alarm | <a href="https://fyahalarm.com">fyahalarm.com</a></p>
-#                 </div>
-#             </div>
-#         </body>
-#         </html>
-#         """
-
-#         # Attach HTML body
-#         html_part = MIMEText(html_body, "html")
-#         alt_part = MIMEMultipart("alternative")
-#         alt_part.attach(html_part)
-#         msg.attach(alt_part)
-
-#         # Attach PDF
-#         part = MIMEBase('application', 'octet-stream')
-#         part.set_payload(await pdf.read())
-#         encoders.encode_base64(part)
-#         part.add_header('Content-Disposition', f'attachment; filename="{pdf.filename}"')
-#         msg.attach(part)
-
-#         # Send email
-#         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-#             server.starttls()
-#             server.login(SENDER_EMAIL, SENDER_PASSWORD)
-#             server.send_message(msg)
-
-#         return JSONResponse(content={"message": "Email sent with styled body and PDF attached."}, status_code=200)
-
-#     except smtplib.SMTPException as e:
-#         return JSONResponse(content={"message": f"SMTP error: {str(e)}"}, status_code=500)
-#     except Exception as e:
-#         return JSONResponse(content={"message": f"Error: {str(e)}"}, status_code=500)
-
 @app.post("/send-email")
 async def send_email(pdf: UploadFile = File(...), email: str = Form(...)):
     try:
@@ -908,13 +803,15 @@ async def send_email(pdf: UploadFile = File(...), email: str = Form(...)):
         </html>
         """
 
+        msg.attach(MIMEText(html_body, "html"))
+
         # Attach the PDF
         part = MIMEBase('application', 'octet-stream')
         part.set_payload(await pdf.read())
         encoders.encode_base64(part)
         part.add_header('Content-Disposition', f'attachment; filename="{pdf.filename}"')
         msg.attach(part)
-        msg.attach(MIMEText(html_body, "html"))
+        
 
         # Send the email
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
