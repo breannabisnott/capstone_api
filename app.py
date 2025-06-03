@@ -33,7 +33,6 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    max_body_size=20 * 1024 * 1024,  # 20MB
 )
 
 class SensorData(BaseModel):
