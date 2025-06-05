@@ -725,125 +725,125 @@ async def send_email(pdf: UploadFile = File(...), email: str = Form(...)):
         msg['To'] = email
         msg['Subject'] = 'Fyah Alarm Incident Report PDF'
 
-        html_body = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans&display=swap" rel="stylesheet">
-            <style>
-                body {{
-                    font-family: 'Open Sans', Arial, sans-serif;
-                    line-height: 1.6;
-                    color: #333;
-                    max-width: 600px;
-                    margin: 0 auto;
-                    padding: 0;
-                    background-color: #E5D0AC;
-                }}
-                .email-container {{
-                    background-color: white;
-                    border-radius: 8px;
-                    overflow: hidden;
-                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                    margin: 20px 0;
-                }}
-                .header {{
-                    background-color: #430707;
-                    color: #ffffff;
-                    padding: 25px;
-                    text-align: center;
-                    font-family: 'Montserrat', Arial, sans-serif;
-                }}
-                .logo {{
-                    font-size: 24px;
-                    font-weight: bold;
-                    margin-bottom: 10px;
-                    color: #ffffff;
-                }}
-                .website-link {{
-                    color: #ffffff !important;
-                    text-decoration: none;
-                    font-size: 14px;
-                    display: inline-block;
-                    margin-top: 10px;
-                }}
-                .content {{
-                    padding: 25px;
-                    background-color: white;
-                    border-left: 4px solid #6d1111;
-                }}
-                .alert-title {{
-                    color: #430707;
-                    border-bottom: 2px solid #bd9999;
-                    padding-bottom: 10px;
-                }}
-                .pdf-notice {{
-                    background-color: #faf5f5;
-                    border: 1px dashed #6d1111;
-                    padding: 15px;
-                    margin: 20px 0;
-                    border-radius: 4px;
-                }}
-                .pdf-icon {{
-                    color: #430707;
-                    font-size: 24px;
-                    vertical-align: middle;
-                    margin-right: 10px;
-                }}
-                .footer {{
-                    margin-top: 20px;
-                    font-size: 12px;
-                    color: #777;
-                    text-align: center;
-                    padding: 15px;
-                    border-top: 1px solid #E5D0AC;
-                    background-color: #faf5f5;
-                }}
-            </style>
-        </head>
-        <body>
-            <div class="email-container">
-                <div class="header">
-                    <div class="logo">Fyah Alarm</div>
-                    <h2 style="margin: 10px 0; font-size: 28px; letter-spacing: 1px; color: #ffffff;">📄 INCIDENT REPORT</h2>
+        # html_body = f"""
+        # <!DOCTYPE html>
+        # <html>
+        # <head>
+        #     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans&display=swap" rel="stylesheet">
+        #     <style>
+        #         body {{
+        #             font-family: 'Open Sans', Arial, sans-serif;
+        #             line-height: 1.6;
+        #             color: #333;
+        #             max-width: 600px;
+        #             margin: 0 auto;
+        #             padding: 0;
+        #             background-color: #E5D0AC;
+        #         }}
+        #         .email-container {{
+        #             background-color: white;
+        #             border-radius: 8px;
+        #             overflow: hidden;
+        #             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        #             margin: 20px 0;
+        #         }}
+        #         .header {{
+        #             background-color: #430707;
+        #             color: #ffffff;
+        #             padding: 25px;
+        #             text-align: center;
+        #             font-family: 'Montserrat', Arial, sans-serif;
+        #         }}
+        #         .logo {{
+        #             font-size: 24px;
+        #             font-weight: bold;
+        #             margin-bottom: 10px;
+        #             color: #ffffff;
+        #         }}
+        #         .website-link {{
+        #             color: #ffffff !important;
+        #             text-decoration: none;
+        #             font-size: 14px;
+        #             display: inline-block;
+        #             margin-top: 10px;
+        #         }}
+        #         .content {{
+        #             padding: 25px;
+        #             background-color: white;
+        #             border-left: 4px solid #6d1111;
+        #         }}
+        #         .alert-title {{
+        #             color: #430707;
+        #             border-bottom: 2px solid #bd9999;
+        #             padding-bottom: 10px;
+        #         }}
+        #         .pdf-notice {{
+        #             background-color: #faf5f5;
+        #             border: 1px dashed #6d1111;
+        #             padding: 15px;
+        #             margin: 20px 0;
+        #             border-radius: 4px;
+        #         }}
+        #         .pdf-icon {{
+        #             color: #430707;
+        #             font-size: 24px;
+        #             vertical-align: middle;
+        #             margin-right: 10px;
+        #         }}
+        #         .footer {{
+        #             margin-top: 20px;
+        #             font-size: 12px;
+        #             color: #777;
+        #             text-align: center;
+        #             padding: 15px;
+        #             border-top: 1px solid #E5D0AC;
+        #             background-color: #faf5f5;
+        #         }}
+        #     </style>
+        # </head>
+        # <body>
+        #     <div class="email-container">
+        #         <div class="header">
+        #             <div class="logo">Fyah Alarm</div>
+        #             <h2 style="margin: 10px 0; font-size: 28px; letter-spacing: 1px; color: #ffffff;">📄 INCIDENT REPORT</h2>
                     
-                    <a href="https://fyahalarm.com" class="website-link" style="color: #ffffff;">View Full Dashboard</a>
-                </div>
+        #             <a href="https://fyahalarm.com" class="website-link" style="color: #ffffff;">View Full Dashboard</a>
+        #         </div>
                 
-                <div class="content">
-                    <h4 class="alert-title">Incident Documentation</h4>
-                    <p>Your detailed incident report is attached to this email as a PDF document.</p>
+        #         <div class="content">
+        #             <h4 class="alert-title">Incident Documentation</h4>
+        #             <p>Your detailed incident report is attached to this email as a PDF document.</p>
                     
-                    <div class="pdf-notice">
-                        <span class="pdf-icon">📎</span>
-                        <strong>Attached Report Contains:</strong>
-                        <ul style="margin: 10px 0 0 20px;">
-                            <li>Full incident details and timeline</li>
-                            <li>Device sensor readings</li>
-                        </ul>
-                    </div>
+        #             <div class="pdf-notice">
+        #                 <span class="pdf-icon">📎</span>
+        #                 <strong>Attached Report Contains:</strong>
+        #                 <ul style="margin: 10px 0 0 20px;">
+        #                     <li>Full incident details and timeline</li>
+        #                     <li>Device sensor readings</li>
+        #                 </ul>
+        #             </div>
                     
-                    <p style="margin-top: 20px;">Please review the attached report for complete information about this incident.</p>
+        #             <p style="margin-top: 20px;">Please review the attached report for complete information about this incident.</p>
                     
-                    <div style="margin-top: 25px; padding: 15px; background-color: #faf5f5; border-radius: 4px;">
-                        <p style="margin: 0; color: #430707;">For real-time monitoring:</p>
-                        <a href="https://fyahalarm.com/overview.html" 
-                        style="color: #6d1111; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 8px;">
-                        Access Live Dashboard
-                        </a>
-                    </div>
-                </div>
+        #             <div style="margin-top: 25px; padding: 15px; background-color: #faf5f5; border-radius: 4px;">
+        #                 <p style="margin: 0; color: #430707;">For real-time monitoring:</p>
+        #                 <a href="https://fyahalarm.com/overview.html" 
+        #                 style="color: #6d1111; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 8px;">
+        #                 Access Live Dashboard
+        #                 </a>
+        #             </div>
+        #         </div>
                 
-                <div class="footer">
-                    <p>This document contains sensitive information about a detected incident.</p>
-                    <p>© {datetime.now().year} Fyah Alarm | <a href="https://fyahalarm.com" style="color: #6d1111; text-decoration: none;">fyahalarm.com</a></p>
-                </div>
-            </div>
-        </body>
-        </html>
-        """
+        #         <div class="footer">
+        #             <p>This document contains sensitive information about a detected incident.</p>
+        #             <p>© {datetime.now().year} Fyah Alarm | <a href="https://fyahalarm.com" style="color: #6d1111; text-decoration: none;">fyahalarm.com</a></p>
+        #         </div>
+        #     </div>
+        # </body>
+        # </html>
+        # """
 
-        msg.attach(MIMEText(html_body, "html"))
+        # msg.attach(MIMEText(html_body, "html"))
 
         # Attach the PDF
         part = MIMEBase('application', 'octet-stream')
