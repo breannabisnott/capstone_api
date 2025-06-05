@@ -1,3 +1,4 @@
+from email.mime.application import MIMEApplication
 from fastapi import FastAPI, Query, File, UploadFile, Form, HTTPException
 from fastapi.responses import JSONResponse
 import smtplib
@@ -716,155 +717,255 @@ def send_gas_threshold_email(device_id: str, lat: float, lng:float, alert_email:
     except Exception as e:
         print(f" Failed to send email: {e}")
 
+# @app.post("/send-email")
+# async def send_email(pdf: UploadFile = File(...), email: str = Form(...)):
+#     try:
+#         # Create the email
+#         msg = MIMEMultipart()
+#         msg['From'] = SENDER_EMAIL
+#         msg['To'] = email
+#         msg['Subject'] = 'Fyah Alarm Incident Report PDF'
+
+#         # html_body = f"""
+#         # <!DOCTYPE html>
+#         # <html>
+#         # <head>
+#         #     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans&display=swap" rel="stylesheet">
+#         #     <style>
+#         #         body {{
+#         #             font-family: 'Open Sans', Arial, sans-serif;
+#         #             line-height: 1.6;
+#         #             color: #333;
+#         #             max-width: 600px;
+#         #             margin: 0 auto;
+#         #             padding: 0;
+#         #             background-color: #E5D0AC;
+#         #         }}
+#         #         .email-container {{
+#         #             background-color: white;
+#         #             border-radius: 8px;
+#         #             overflow: hidden;
+#         #             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+#         #             margin: 20px 0;
+#         #         }}
+#         #         .header {{
+#         #             background-color: #430707;
+#         #             color: #ffffff;
+#         #             padding: 25px;
+#         #             text-align: center;
+#         #             font-family: 'Montserrat', Arial, sans-serif;
+#         #         }}
+#         #         .logo {{
+#         #             font-size: 24px;
+#         #             font-weight: bold;
+#         #             margin-bottom: 10px;
+#         #             color: #ffffff;
+#         #         }}
+#         #         .website-link {{
+#         #             color: #ffffff !important;
+#         #             text-decoration: none;
+#         #             font-size: 14px;
+#         #             display: inline-block;
+#         #             margin-top: 10px;
+#         #         }}
+#         #         .content {{
+#         #             padding: 25px;
+#         #             background-color: white;
+#         #             border-left: 4px solid #6d1111;
+#         #         }}
+#         #         .alert-title {{
+#         #             color: #430707;
+#         #             border-bottom: 2px solid #bd9999;
+#         #             padding-bottom: 10px;
+#         #         }}
+#         #         .pdf-notice {{
+#         #             background-color: #faf5f5;
+#         #             border: 1px dashed #6d1111;
+#         #             padding: 15px;
+#         #             margin: 20px 0;
+#         #             border-radius: 4px;
+#         #         }}
+#         #         .pdf-icon {{
+#         #             color: #430707;
+#         #             font-size: 24px;
+#         #             vertical-align: middle;
+#         #             margin-right: 10px;
+#         #         }}
+#         #         .footer {{
+#         #             margin-top: 20px;
+#         #             font-size: 12px;
+#         #             color: #777;
+#         #             text-align: center;
+#         #             padding: 15px;
+#         #             border-top: 1px solid #E5D0AC;
+#         #             background-color: #faf5f5;
+#         #         }}
+#         #     </style>
+#         # </head>
+#         # <body>
+#         #     <div class="email-container">
+#         #         <div class="header">
+#         #             <div class="logo">Fyah Alarm</div>
+#         #             <h2 style="margin: 10px 0; font-size: 28px; letter-spacing: 1px; color: #ffffff;">📄 INCIDENT REPORT</h2>
+                    
+#         #             <a href="https://fyahalarm.com" class="website-link" style="color: #ffffff;">View Full Dashboard</a>
+#         #         </div>
+                
+#         #         <div class="content">
+#         #             <h4 class="alert-title">Incident Documentation</h4>
+#         #             <p>Your detailed incident report is attached to this email as a PDF document.</p>
+                    
+#         #             <div class="pdf-notice">
+#         #                 <span class="pdf-icon">📎</span>
+#         #                 <strong>Attached Report Contains:</strong>
+#         #                 <ul style="margin: 10px 0 0 20px;">
+#         #                     <li>Full incident details and timeline</li>
+#         #                     <li>Device sensor readings</li>
+#         #                 </ul>
+#         #             </div>
+                    
+#         #             <p style="margin-top: 20px;">Please review the attached report for complete information about this incident.</p>
+                    
+#         #             <div style="margin-top: 25px; padding: 15px; background-color: #faf5f5; border-radius: 4px;">
+#         #                 <p style="margin: 0; color: #430707;">For real-time monitoring:</p>
+#         #                 <a href="https://fyahalarm.com/overview.html" 
+#         #                 style="color: #6d1111; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 8px;">
+#         #                 Access Live Dashboard
+#         #                 </a>
+#         #             </div>
+#         #         </div>
+                
+#         #         <div class="footer">
+#         #             <p>This document contains sensitive information about a detected incident.</p>
+#         #             <p>© {datetime.now().year} Fyah Alarm | <a href="https://fyahalarm.com" style="color: #6d1111; text-decoration: none;">fyahalarm.com</a></p>
+#         #         </div>
+#         #     </div>
+#         # </body>
+#         # </html>
+#         # """
+
+#         # msg.attach(MIMEText(html_body, "html"))
+
+#         # Attach the PDF
+#         part = MIMEBase('application', 'octet-stream')
+#         part.set_payload(await pdf.read())
+#         encoders.encode_base64(part)
+#         part.add_header('Content-Disposition', f'attachment; filename="{pdf.filename}"')
+#         msg.attach(part)
+        
+
+#         # Send the email
+#         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+#             server.starttls()
+#             server.login(SENDER_EMAIL, SENDER_PASSWORD)
+#             server.send_message(msg)
+
+#         return JSONResponse(content={"message": "Email sent successfully!"}, status_code=200)
+
+#     except smtplib.SMTPException as e:
+#         return JSONResponse(content={"message": f"Failed to send email: {str(e)}"}, status_code=500)
+#     except Exception as e:
+#         return JSONResponse(content={"message": f"An unexpected error occurred: {str(e)}"}, status_code=500)
+    
 @app.post("/send-email")
 async def send_email(pdf: UploadFile = File(...), email: str = Form(...)):
     try:
-        # Create the email
+        # Validate email format first
+        import re
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(email_pattern, email):
+            return JSONResponse(
+                content={"message": "Invalid email format"}, 
+                status_code=400
+            )
+        
+        # Read PDF content once and store in memory
+        pdf_content = await pdf.read()
+        
+        # Validate PDF size (e.g., max 10MB)
+        if len(pdf_content) > 10 * 1024 * 1024:
+            return JSONResponse(
+                content={"message": "PDF file too large (max 10MB)"}, 
+                status_code=400
+            )
+        
+        # Create the email message
         msg = MIMEMultipart()
         msg['From'] = SENDER_EMAIL
         msg['To'] = email
         msg['Subject'] = 'Fyah Alarm Incident Report PDF'
-
-        # html_body = f"""
-        # <!DOCTYPE html>
-        # <html>
-        # <head>
-        #     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans&display=swap" rel="stylesheet">
-        #     <style>
-        #         body {{
-        #             font-family: 'Open Sans', Arial, sans-serif;
-        #             line-height: 1.6;
-        #             color: #333;
-        #             max-width: 600px;
-        #             margin: 0 auto;
-        #             padding: 0;
-        #             background-color: #E5D0AC;
-        #         }}
-        #         .email-container {{
-        #             background-color: white;
-        #             border-radius: 8px;
-        #             overflow: hidden;
-        #             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        #             margin: 20px 0;
-        #         }}
-        #         .header {{
-        #             background-color: #430707;
-        #             color: #ffffff;
-        #             padding: 25px;
-        #             text-align: center;
-        #             font-family: 'Montserrat', Arial, sans-serif;
-        #         }}
-        #         .logo {{
-        #             font-size: 24px;
-        #             font-weight: bold;
-        #             margin-bottom: 10px;
-        #             color: #ffffff;
-        #         }}
-        #         .website-link {{
-        #             color: #ffffff !important;
-        #             text-decoration: none;
-        #             font-size: 14px;
-        #             display: inline-block;
-        #             margin-top: 10px;
-        #         }}
-        #         .content {{
-        #             padding: 25px;
-        #             background-color: white;
-        #             border-left: 4px solid #6d1111;
-        #         }}
-        #         .alert-title {{
-        #             color: #430707;
-        #             border-bottom: 2px solid #bd9999;
-        #             padding-bottom: 10px;
-        #         }}
-        #         .pdf-notice {{
-        #             background-color: #faf5f5;
-        #             border: 1px dashed #6d1111;
-        #             padding: 15px;
-        #             margin: 20px 0;
-        #             border-radius: 4px;
-        #         }}
-        #         .pdf-icon {{
-        #             color: #430707;
-        #             font-size: 24px;
-        #             vertical-align: middle;
-        #             margin-right: 10px;
-        #         }}
-        #         .footer {{
-        #             margin-top: 20px;
-        #             font-size: 12px;
-        #             color: #777;
-        #             text-align: center;
-        #             padding: 15px;
-        #             border-top: 1px solid #E5D0AC;
-        #             background-color: #faf5f5;
-        #         }}
-        #     </style>
-        # </head>
-        # <body>
-        #     <div class="email-container">
-        #         <div class="header">
-        #             <div class="logo">Fyah Alarm</div>
-        #             <h2 style="margin: 10px 0; font-size: 28px; letter-spacing: 1px; color: #ffffff;">📄 INCIDENT REPORT</h2>
-                    
-        #             <a href="https://fyahalarm.com" class="website-link" style="color: #ffffff;">View Full Dashboard</a>
-        #         </div>
-                
-        #         <div class="content">
-        #             <h4 class="alert-title">Incident Documentation</h4>
-        #             <p>Your detailed incident report is attached to this email as a PDF document.</p>
-                    
-        #             <div class="pdf-notice">
-        #                 <span class="pdf-icon">📎</span>
-        #                 <strong>Attached Report Contains:</strong>
-        #                 <ul style="margin: 10px 0 0 20px;">
-        #                     <li>Full incident details and timeline</li>
-        #                     <li>Device sensor readings</li>
-        #                 </ul>
-        #             </div>
-                    
-        #             <p style="margin-top: 20px;">Please review the attached report for complete information about this incident.</p>
-                    
-        #             <div style="margin-top: 25px; padding: 15px; background-color: #faf5f5; border-radius: 4px;">
-        #                 <p style="margin: 0; color: #430707;">For real-time monitoring:</p>
-        #                 <a href="https://fyahalarm.com/overview.html" 
-        #                 style="color: #6d1111; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 8px;">
-        #                 Access Live Dashboard
-        #                 </a>
-        #             </div>
-        #         </div>
-                
-        #         <div class="footer">
-        #             <p>This document contains sensitive information about a detected incident.</p>
-        #             <p>© {datetime.now().year} Fyah Alarm | <a href="https://fyahalarm.com" style="color: #6d1111; text-decoration: none;">fyahalarm.com</a></p>
-        #         </div>
-        #     </div>
-        # </body>
-        # </html>
-        # """
-
-        # msg.attach(MIMEText(html_body, "html"))
-
-        # Attach the PDF
-        part = MIMEBase('application', 'octet-stream')
-        part.set_payload(await pdf.read())
-        encoders.encode_base64(part)
-        part.add_header('Content-Disposition', f'attachment; filename="{pdf.filename}"')
-        msg.attach(part)
         
+        # Add a simple text body (faster than HTML)
+        text_body = """
+        Dear User,
 
-        # Send the email
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-            server.starttls()
-            server.login(SENDER_EMAIL, SENDER_PASSWORD)
-            server.send_message(msg)
+        Please find your Fyah Alarm incident report attached as a PDF.
 
-        return JSONResponse(content={"message": "Email sent successfully!"}, status_code=200)
+        This report contains:
+        • Full incident details and timeline
+        • Device sensor readings
 
+        For real-time monitoring, visit: https://fyahalarm.com/overview.html
+
+        Best regards,
+        Fyah Alarm Team
+        """
+        msg.attach(MIMEText(text_body, "plain"))
+
+        # Attach the PDF efficiently
+        pdf_part = MIMEApplication(pdf_content, _subtype='pdf')
+        pdf_part.add_header(
+            'Content-Disposition', 
+            f'attachment; filename="{pdf.filename or "incident_report.pdf"}"'
+        )
+        msg.attach(pdf_part)
+        
+        # Use connection pooling and shorter timeout
+        import asyncio
+        
+        def send_email_sync():
+            with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+                server.set_debuglevel(0)  # Disable debug output
+                server.starttls()
+                server.login(SENDER_EMAIL, SENDER_PASSWORD)
+                server.send_message(msg)
+        
+        # Run email sending with timeout
+        await asyncio.wait_for(
+            asyncio.get_event_loop().run_in_executor(None, send_email_sync),
+            timeout=20.0  # 20 second timeout
+        )
+
+        return JSONResponse(
+            content={"message": "Email sent successfully!"}, 
+            status_code=200
+        )
+
+    except asyncio.TimeoutError:
+        return JSONResponse(
+            content={"message": "Email sending timed out. Please try again."}, 
+            status_code=408
+        )
+    except smtplib.SMTPAuthenticationError:
+        return JSONResponse(
+            content={"message": "Email authentication failed"}, 
+            status_code=500
+        )
+    except smtplib.SMTPRecipientsRefused:
+        return JSONResponse(
+            content={"message": "Invalid recipient email address"}, 
+            status_code=400
+        )
     except smtplib.SMTPException as e:
-        return JSONResponse(content={"message": f"Failed to send email: {str(e)}"}, status_code=500)
+        return JSONResponse(
+            content={"message": f"Email service error: {str(e)}"}, 
+            status_code=500
+        )
     except Exception as e:
-        return JSONResponse(content={"message": f"An unexpected error occurred: {str(e)}"}, status_code=500)
+        return JSONResponse(
+            content={"message": f"Unexpected error: {str(e)}"}, 
+            status_code=500
+        )
     
 @app.post("/data")
 async def new_data(request:SensorData):
